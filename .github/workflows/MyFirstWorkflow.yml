@@ -1,22 +1,29 @@
 name: My almost first workflow
-
 on: 
   push:
     branches: 
       - main
   workflow_dispatch:
+
 jobs:
   MyWorkflow:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Some random string for test"
-
-      - name: Checkout
+      - name: Checkout repo to use the action locally
         uses: actions/checkout@v4
 
-      - name: List files in the repository
+      - name: Run my own container action
+        id: my-action
+        uses: ./.github/custom_action
+        with:
+          who-to-greet: "@Danil"
+
+      - name: Output the answer
+        run: echo "The answer is ${{ steps.my-action.outputs.answer }}"
+
+      - name: Test the container
+        if: ${{ steps.my-action.outputs.answer != 42 }}
         run: |
-          echo "The repository ${{ github.repository }} containes the following files: "
-          tree
+          echo "::error file=entrypoint.sh,line=4,title=Error in container::The answer was not expected"
+          exit 1
         
-          
